@@ -74,12 +74,14 @@ const Home = () => {
               }}
             />
           </View>
-        </View>
-        <View style={{marginLeft: SIZES.padding}}>
-          <Text style={{color: COLORS.primary, ...FONTS.h3}}>11 Nov, 2020</Text>
-          <Text style={{...FONTS.body3, color: COLORS.darkgray}}>
-            18% more than last month
-          </Text>
+          <View style={{marginLeft: SIZES.padding}}>
+            <Text style={{color: COLORS.primary, ...FONTS.h3}}>
+              11 Nov, 2020
+            </Text>
+            <Text style={{...FONTS.body3, color: COLORS.darkgray}}>
+              18% more than last month
+            </Text>
+          </View>
         </View>
       </View>
     );
