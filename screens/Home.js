@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useRef} from 'react';
 import {useState} from 'react';
 import {
   FlatList,
@@ -8,6 +8,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Animated,
 } from 'react-native';
 import {COLORS, SIZES, FONTS, icons} from '../constants';
 
@@ -212,6 +213,8 @@ const Home = () => {
     },
   ];
 
+  const categoryListHeightAnimationValue = useRef(new Animated.Value(115))
+    .current;
   const [categories, setCategories] = useState(categoriesData);
   const [viewMode, setViewMode] = useState('chart');
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -399,14 +402,14 @@ const Home = () => {
 
     return (
       <View style={{paddingHorizontal: SIZES.padding - 5}}>
-        <View>
+        <Animated.View style={{height: categoryListHeightAnimationValue}}>
           <FlatList
             data={categories}
             renderItem={renderItem}
             keyExtractor={item => `${item.id}`}
             numColumns={2}
           />
-        </View>
+        </Animated.View>
         <TouchableOpacity
           style={{
             flexDirection: 'row',
@@ -414,16 +417,56 @@ const Home = () => {
             justifyContent: 'center',
           }}
           onPress={() => {
+            if (showMoreToggle) {
+              Animated.timing(categoryListHeightAnimationValue, {
+                toValue: 115,
+                duration: 300,
+                useNativeDriver: false,
+              }).start();
+            } else {
+              Animated.timing(categoryListHeightAnimationValue, {
+                toValue: 172.5,
+                duration: 300,
+                useNativeDriver: false,
+              }).start();
+            }
+
             setShowMoreToggle(!showMoreToggle);
           }}>
           <Text style={{...FONTS.body4}}>
             {showMoreToggle ? 'LESS' : 'MORE'}
           </Text>
           <Image
-            source={icons.down_arrow}
+            source={showMoreToggle ? icons.down_arrow : icons.down_arrow}
             style={{marginLeft: 5, width: 15, height: 15, alignSelf: 'center'}}
           />
         </TouchableOpacity>
+      </View>
+    );
+  }
+
+  function renderIncomingExpensesTitle() {
+    return (
+      <View
+        style={{padding: SIZES.padding, backgroundColor: COLORS.lightGray2}}>
+        <Text style={{...FONTS.h3, color: COLORS.primary}}>
+          INCOMING renderIncomingExpenses
+        </Text>
+        <Text style={{...FONTS.body4, color: COLORS.darkgray}}>12 Total</Text>
+      </View>
+    );
+  }
+
+  function renderIncomingExpenses() {
+    let allExpenses = selectedCategory ? selectedCategory.expenses : [];
+
+    //Filter pending expenses
+    let incomingExpenses = allExpenses.filer(a => a.status == 'P');
+
+    return (
+      <View>
+        {renderIncomingExpensesTitle()}{' '}
+        {incomingExpenses.length > 0 && <FlatList />}
       </View>
     );
   }
@@ -440,7 +483,12 @@ const Home = () => {
       {renderCategoryHeaderSection()}
 
       <ScrollView contentContainerStyle={{paddingBottom: 60}}>
-        {viewMode == 'list' && <View>{renderCategoryList()}</View>}
+        {viewMode == 'list' && (
+          <View>
+            {renderCategoryList()}
+            {renderIncomingExpenses()}
+          </View>
+        )}
       </ScrollView>
     </View>
   );
