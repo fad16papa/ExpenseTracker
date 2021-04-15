@@ -464,7 +464,16 @@ const Home = () => {
     let incomingExpenses = allExpenses.filter(a => a.status == 'P');
 
     const renderItem = ({item, index}) => (
-      <View>
+      <View
+        style={{
+          width: 300,
+          marginRight: SIZES.padding,
+          marginLeft: index == 0 ? SIZES.padding : 0,
+          marginVertical: SIZES.radius,
+          borderRadius: SIZES.radius,
+          backgroundColor: COLORS.white,
+          ...styles.shadow,
+        }}>
         {/* Title */}
         <View
           style={{
@@ -506,7 +515,7 @@ const Home = () => {
           </Text>
 
           {/* Location */}
-          <Text>Location</Text>
+          <Text style={{marginTop: SIZES.padding, ...FONTS.h4}}>Location</Text>
           <View style={{flexDirection: 'row'}}>
             <Image
               source={icons.pin}
@@ -526,6 +535,20 @@ const Home = () => {
               {item.location}
             </Text>
           </View>
+        </View>
+        {/* Price */}
+        <View
+          style={{
+            height: 50,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderBottomStartRadius: SIZES.radius,
+            borderBottomEndRadius: SIZES.radius,
+            backgroundColor: selectedCategory.color,
+          }}>
+          <Text style={{color: COLORS.white, ...FONTS.body3}}>
+            CONFIRM {item.total.toFixed(2)} USD
+          </Text>
         </View>
       </View>
     );
