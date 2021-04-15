@@ -10,6 +10,7 @@ import {
   View,
   Animated,
 } from 'react-native';
+import {VictoryPie} from 'victory-native';
 import {COLORS, SIZES, FONTS, icons} from '../constants';
 
 const Home = () => {
@@ -581,6 +582,69 @@ const Home = () => {
     );
   }
 
+  function processCategoryDataToDisplay() {
+    //Filter expenses with "Confirmed" status
+    let chartData = categories.map(item => {
+      let confirmExpenses = item.expenses.filter(a => a.status == 'C');
+      var total = confirmExpenses.reduce((a, b) => a + (b.total || 0), 0);
+
+      return {
+        name: item.name,
+        y: total,
+        expenseCount: confirmExpenses.length,
+        color: item.color,
+        id: item.id,
+      };
+    });
+
+    //Filter out categories with no data/expenses
+    let filterChatData = chartData.filter(a => a.y > 0);
+
+    //Calculate the total expenses
+    let totalExpense = filterChatData.reduce((a, b) => a + (b.y || 0), 0);
+
+    //Calculate percentage and repopulate chart data
+    let finalChartData = filterChatData.map(item => {
+      let percentage = ((item.y / totalExpense) * 100).toFixed(0);
+      return {
+        label: `${percentage}`,
+        y: Number(item.y),
+        expenseCount: item.expenseCount,
+        color: item.color,
+        name: item.name,
+        id: item.id,
+      };
+    });
+
+    return finalChartData;
+  }
+
+  function renderChart() {
+    let chartData = processCategoryDataToDisplay();
+    let colorScales = chartData.map(item => item.color);
+
+    return (
+      <View style={{alignItems: 'center', justifyContent: 'center'}}>
+        <VictoryPie
+          data={chartData}
+          colorScale={colorScales}
+          labels={datum => `${datum.y}`}
+          radius={SIZES.width * 0.4 - 10}
+          innerRadius={70}
+          labelRadius={({innerRadius}) => SIZES.width * 0.4 + innerRadius / 2.5}
+          style={{
+            labels: {fill: COLORS.white, ...FONTS.body3},
+            parent: {
+              ...styles.shadow,
+            },
+          }}
+          width={SIZES.width * 0.8}
+          height={SIZES.width * 0.8}
+        />
+      </View>
+    );
+  }
+
   return (
     <View style={{flex: 1, backgroundColor: COLORS.lightGray}}>
       {/*Nav bar section */}
@@ -599,6 +663,7 @@ const Home = () => {
             {renderIncomingExpenses()}
           </View>
         )}
+        {viewMode == 'chart' && <View>{renderChart()}</View>}
       </ScrollView>
     </View>
   );
