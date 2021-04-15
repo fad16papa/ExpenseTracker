@@ -450,7 +450,7 @@ const Home = () => {
       <View
         style={{padding: SIZES.padding, backgroundColor: COLORS.lightGray2}}>
         <Text style={{...FONTS.h3, color: COLORS.primary}}>
-          INCOMING renderIncomingExpenses
+          INCOMING EXPENSES
         </Text>
         <Text style={{...FONTS.body4, color: COLORS.darkgray}}>12 Total</Text>
       </View>
@@ -461,12 +461,99 @@ const Home = () => {
     let allExpenses = selectedCategory ? selectedCategory.expenses : [];
 
     //Filter pending expenses
-    let incomingExpenses = allExpenses.filer(a => a.status == 'P');
+    let incomingExpenses = allExpenses.filter(a => a.status == 'P');
+
+    const renderItem = ({item, index}) => (
+      <View>
+        {/* Title */}
+        <View
+          style={{
+            flexDirection: 'row',
+            padding: SIZES.padding,
+            alignItems: 'center',
+          }}>
+          <View
+            style={{
+              height: 50,
+              width: 50,
+              borderRadius: 25,
+              backgroundColor: COLORS.lightGray,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: SIZES.base,
+            }}>
+            <Image
+              source={selectedCategory.icon}
+              style={{width: 30, height: 30, tintColor: selectedCategory.color}}
+            />
+          </View>
+          <Text style={{...FONTS.h3, color: selectedCategory.color}}>
+            {selectedCategory.name}
+          </Text>
+        </View>
+
+        {/* Expenses Description */}
+        <View style={{paddingHorizontal: SIZES.padding}}>
+          {/* Title and description */}
+          <Text style={{...FONTS.h2}}>{item.title}</Text>
+          <Text
+            style={{
+              ...FONTS.body3,
+              flexWrap: 'wrap',
+              color: COLORS.darkgray,
+            }}>
+            {item.description}
+          </Text>
+
+          {/* Location */}
+          <Text>Location</Text>
+          <View style={{flexDirection: 'row'}}>
+            <Image
+              source={icons.pin}
+              style={{
+                width: 20,
+                height: 20,
+                tintColor: COLORS.darkgray,
+                marginRight: 5,
+              }}
+            />
+            <Text
+              style={{
+                marginBottom: SIZES.base,
+                color: COLORS.darkgray,
+                ...FONTS.body4,
+              }}>
+              {item.location}
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
 
     return (
       <View>
-        {renderIncomingExpensesTitle()}{' '}
-        {incomingExpenses.length > 0 && <FlatList />}
+        {renderIncomingExpensesTitle()}
+
+        {incomingExpenses.length > 0 && (
+          <FlatList
+            data={incomingExpenses}
+            renderItem={renderItem}
+            keyExtractor={item => `${item.id}`}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+          />
+        )}
+
+        {incomingExpenses.length == 0 && (
+          <View
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: 300,
+            }}>
+            <Text style={{color: COLORS.primary, ...FONTS.h3}}>No Record</Text>
+          </View>
+        )}
       </View>
     );
   }
