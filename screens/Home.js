@@ -619,9 +619,18 @@ const Home = () => {
     return finalChartData;
   }
 
+  function selectedCategoryByName(name) {
+    let category = categories.filter(a => a.name == name);
+    setSelectedCategory(category[0]);
+  }
+
   function renderChart() {
     let chartData = processCategoryDataToDisplay();
     let colorScales = chartData.map(item => item.color);
+    let totalExpenseCount = chartData.reduce(
+      (a, b) => a + (b.expenseCount || 0),
+      0,
+    );
 
     return (
       <View style={{alignItems: 'center', justifyContent: 'center'}}>
@@ -629,7 +638,11 @@ const Home = () => {
           data={chartData}
           colorScale={colorScales}
           labels={datum => `${datum.y}`}
-          radius={SIZES.width * 0.4 - 10}
+          radius={({datum}) =>
+            selectedCategory && selectedCategory.name == datum.name
+              ? SIZES.width * 0.4
+              : SIZES.width * 0.4 - 10
+          }
           innerRadius={70}
           labelRadius={({innerRadius}) => SIZES.width * 0.4 + innerRadius / 2.5}
           style={{
@@ -640,7 +653,31 @@ const Home = () => {
           }}
           width={SIZES.width * 0.8}
           height={SIZES.width * 0.8}
+          events={[
+            {
+              target: 'data',
+              eventHandlers: {
+                onPress: () => {
+                  return [
+                    {
+                      target: 'labels',
+                      mutation: props => {
+                        let categoryName = chartData[props.index].name;
+                        selectedCategoryByName(categoryName);
+                      },
+                    },
+                  ];
+                },
+              },
+            },
+          ]}
         />
+        <View style={{position: 'absolute', top: '42%', left: '42%'}}>
+          <Text style={{...FONTS.h1, textAlign: 'center'}}>
+            {totalExpenseCount}
+          </Text>
+          <Text style={{textAlign: 'center', ...FONTS.body3}}>Expenses</Text>
+        </View>
       </View>
     );
   }
