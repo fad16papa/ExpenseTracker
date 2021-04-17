@@ -632,52 +632,191 @@ const Home = () => {
       0,
     );
 
-    return (
-      <View style={{alignItems: 'center', justifyContent: 'center'}}>
-        <VictoryPie
-          data={chartData}
-          colorScale={colorScales}
-          labels={datum => `${datum.y}`}
-          radius={({datum}) =>
-            selectedCategory && selectedCategory.name == datum.name
-              ? SIZES.width * 0.4
-              : SIZES.width * 0.4 - 10
-          }
-          innerRadius={70}
-          labelRadius={({innerRadius}) => SIZES.width * 0.4 + innerRadius / 2.5}
-          style={{
-            labels: {fill: COLORS.white, ...FONTS.body3},
-            parent: {
-              ...styles.shadow,
-            },
-          }}
-          width={SIZES.width * 0.8}
-          height={SIZES.width * 0.8}
-          events={[
-            {
-              target: 'data',
-              eventHandlers: {
-                onPress: () => {
-                  return [
-                    {
-                      target: 'labels',
-                      mutation: props => {
-                        let categoryName = chartData[props.index].name;
-                        selectedCategoryByName(categoryName);
+    console.log('Check Chart');
+    console.log(chartData);
+
+    if (Platform.OS == 'ios') {
+      return (
+        <View style={{alignItems: 'center', justifyContent: 'center'}}>
+          <VictoryPie
+            data={chartData}
+            labels={datum => `${datum.y}`}
+            radius={({datum}) =>
+              selectedCategory && selectedCategory.name == datum.name
+                ? SIZES.width * 0.4
+                : SIZES.width * 0.4 - 10
+            }
+            innerRadius={70}
+            labelRadius={({innerRadius}) =>
+              (SIZES.width * 0.4 + innerRadius) / 2.5
+            }
+            style={{
+              labels: {fill: 'white', ...FONTS.body3},
+              parent: {
+                ...styles.shadow,
+              },
+            }}
+            width={SIZES.width * 0.8}
+            height={SIZES.width * 0.8}
+            colorScale={colorScales}
+            events={[
+              {
+                target: 'data',
+                eventHandlers: {
+                  onPress: () => {
+                    return [
+                      {
+                        target: 'labels',
+                        mutation: props => {
+                          let categoryName = chartData[props.index].name;
+                          setSelectCategoryByName(categoryName);
+                        },
                       },
-                    },
-                  ];
+                    ];
+                  },
                 },
               },
-            },
-          ]}
-        />
-        <View style={{position: 'absolute', top: '42%', left: '42%'}}>
-          <Text style={{...FONTS.h1, textAlign: 'center'}}>
-            {totalExpenseCount}
-          </Text>
-          <Text style={{textAlign: 'center', ...FONTS.body3}}>Expenses</Text>
+            ]}
+          />
+
+          <View style={{position: 'absolute', top: '42%', left: '42%'}}>
+            <Text style={{...FONTS.h1, textAlign: 'center'}}>
+              {totalExpenseCount}
+            </Text>
+            <Text style={{...FONTS.body3, textAlign: 'center'}}>Expenses</Text>
+          </View>
         </View>
+      );
+    } else {
+      // Android workaround by wrapping VictoryPie with SVG
+      return (
+        <View style={{alignItems: 'center', justifyContent: 'center'}}>
+          <Svg
+            width={SIZES.width}
+            height={SIZES.width}
+            style={{width: '100%', height: 'auto'}}>
+            <VictoryPie
+              standalone={false} // Android workaround
+              data={chartData}
+              labels={datum => `${datum.y}`}
+              radius={({datum}) =>
+                selectedCategory && selectedCategory.name == datum.name
+                  ? SIZES.width * 0.4
+                  : SIZES.width * 0.4 - 10
+              }
+              innerRadius={70}
+              labelRadius={({innerRadius}) =>
+                (SIZES.width * 0.4 + innerRadius) / 2.5
+              }
+              style={{
+                labels: {fill: 'white', ...FONTS.body3},
+                parent: {
+                  ...styles.shadow,
+                },
+              }}
+              width={SIZES.width}
+              height={SIZES.width}
+              colorScale={colorScales}
+              events={[
+                {
+                  target: 'data',
+                  eventHandlers: {
+                    onPress: () => {
+                      return [
+                        {
+                          target: 'labels',
+                          mutation: props => {
+                            let categoryName = chartData[props.index].name;
+                            setSelectCategoryByName(categoryName);
+                          },
+                        },
+                      ];
+                    },
+                  },
+                },
+              ]}
+            />
+          </Svg>
+          <View style={{position: 'absolute', top: '42%', left: '42%'}}>
+            <Text style={{...FONTS.h1, textAlign: 'center'}}>
+              {totalExpenseCount}
+            </Text>
+            <Text style={{...FONTS.body3, textAlign: 'center'}}>Expenses</Text>
+          </View>
+        </View>
+      );
+    }
+  }
+
+  function renderExpenseSummary() {
+    let data = processCategoryDataToDisplay();
+
+    const renderItem = ({item}) => (
+      <TouchableOpacity
+        style={{
+          flexDirection: 'row',
+          height: 40,
+          paddingHorizontal: SIZES.radius,
+          borderRadius: 10,
+          backgroundColor:
+            selectedCategory && selectedCategory.name == item.name
+              ? item.color
+              : COLORS.white,
+        }}
+        onPress={() => {
+          let categoryName = item.name;
+          selectedCategoryByName(categoryName);
+        }}>
+        {/* Name/Category */}
+        <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
+          <View
+            style={{
+              width: 20,
+              height: 20,
+              backgroundColor:
+                selectedCategory && selectedCategory.name == item.name
+                  ? COLORS.white
+                  : item.color,
+              borderRadius: 5,
+            }}
+          />
+
+          <Text
+            style={{
+              marginLeft: SIZES.base,
+              color:
+                selectedCategory && selectedCategory.name == item.name
+                  ? COLORS.white
+                  : COLORS.primary,
+              ...FONTS.h3,
+            }}>
+            {item.name}
+          </Text>
+        </View>
+
+        {/* Expenses */}
+        <View style={{justifyContent: 'center'}}>
+          <Text
+            style={{
+              color:
+                selectedCategory && selectedCategory.name == item.name
+                  ? COLORS.white
+                  : COLORS.primary,
+              ...FONTS.h3,
+            }}>
+            {item.y} USD - {item.label}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+
+    return (
+      <View style={{padding: SIZES.padding}}>
+        <FlatList
+          data={data}
+          renderItem={renderItem}
+          keyExtractor={item => `${item.id}`}
+        />
       </View>
     );
   }
@@ -700,7 +839,12 @@ const Home = () => {
             {renderIncomingExpenses()}
           </View>
         )}
-        {viewMode == 'chart' && <View>{renderChart()}</View>}
+        {viewMode == 'chart' && (
+          <View>
+            {renderChart()}
+            {renderExpenseSummary()}
+          </View>
+        )}
       </ScrollView>
     </View>
   );
